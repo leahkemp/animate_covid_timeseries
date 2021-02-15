@@ -1,0 +1,95 @@
+---
+title: "animate_covid_timeseries"
+output: rmarkdown::github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+I want to try out the [gganimate package!](https://gganimate.com/index.html) So I thought I'd try it out on some coivd time series data from New Zealand. I found some timeseries data here: https://github.com/CSSEGISandData/COVID-19/blob/master/who_covid_19_situation_reports/who_covid_19_sit_rep_time_series/who_covid_19_sit_rep_time_series.csv
+
+## Get data
+
+```{bash, eval = FALSE}
+git clone https://github.com/CSSEGISandData/COVID-19.git
+```
+
+*Note. I set the above code chunk to "eval = FALSE" and manually run it once, to avoid the data being downloaded each time this document is knitted*
+
+## Load libraries
+
+```{r}
+library(ggplot2)
+library(gganimate)
+library(dplyr)
+library(stringr)
+library(lubridate)
+library(gifski)
+```
+
+## Play around with data!
+
+Load data
+
+```{r}
+data <- read.csv("./COVID-19/who_covid_19_situation_reports/who_covid_19_sit_rep_time_series/who_covid_19_sit_rep_time_series.csv", header = TRUE, stringsAsFactors = FALSE)
+```
+
+Format columns (X has automatically been prepended, but using "check.names = FALSE" causes even more problems)
+
+```{r}
+names(data) <- sapply(str_remove_all(colnames(data),"X"),"[")
+```
+
+Extract NZ data
+
+```{r}
+data_nz <- data %>%
+  filter(Country.Region == "New Zealand")
+```
+
+Manipulate data
+
+```{r}
+# Remove redundant columns
+data_nz <- data_nz %>%
+  select (-c(Province.States, WHO.region, WHO.region.label))
+
+# Reformat the data for downstream plot
+data_nz <- data_nz %>% tidyr::gather(date, "cases", na.rm = TRUE)
+
+# Remove first row which is old column names after gather
+data_nz <- data_nz %>% slice(-1)
+
+# Format date column
+data_nz$date <- data_nz$date %>%
+  as.Date(format = "%m.%d.%y")
+
+# Format case number column
+data_nz$cases <- as.integer(data_nz$cases)
+```
+
+## Plot!
+
+```{r}
+plot <- ggplot(data_nz, aes(x = date, y = cases)) +
+  geom_histogram(stat = "identity") +
+  theme_linedraw() +
+  labs(title = "Date: {frame_time}", y = "Number of cases") +
+  transition_time(date) +
+  ease_aes('linear') +
+  shadow_wake(.3)
+
+animate(plot, duration = 10, fps = 20, width = 800, height = 800, renderer = gifski_renderer())
+
+anim_save("covid_timeseries_NZ.gif", animation = last_animation(), path = ".")
+```
+
+## R info
+
+```{r}
+R.Version()
+sessionInfo()
+```
+
