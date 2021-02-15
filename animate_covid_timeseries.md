@@ -3,7 +3,7 @@ animate\_covid\_timeseries
 
 I want to try out the [gganimate
 package\!](https://gganimate.com/index.html) So I thought I’d try it out
-on some coivd time series data from New Zealand. I found some timeseries
+on some covid time series data from New Zealand. I found some timeseries
 data here:
 <https://github.com/CSSEGISandData/COVID-19/blob/master/who_covid_19_situation_reports/who_covid_19_sit_rep_time_series/who_covid_19_sit_rep_time_series.csv>
 
@@ -118,7 +118,7 @@ plot <- ggplot(data_nz, aes(x = date, y = cases)) +
     ## Warning: Ignoring unknown parameters: binwidth, bins, pad
 
 ``` r
-animate(plot, duration = 10, fps = 20, width = 800, height = 800, renderer = gifski_renderer())
+animate(plot, duration = 10, fps = 20, width = 300, height = 300, renderer = gifski_renderer())
 ```
 
 ![](animate_covid_timeseries_files/figure-gfm/unnamed-chunk-7-1.gif)<!-- -->

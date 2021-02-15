@@ -7,7 +7,7 @@ output: rmarkdown::github_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-I want to try out the [gganimate package!](https://gganimate.com/index.html) So I thought I'd try it out on some coivd time series data from New Zealand. I found some timeseries data here: https://github.com/CSSEGISandData/COVID-19/blob/master/who_covid_19_situation_reports/who_covid_19_sit_rep_time_series/who_covid_19_sit_rep_time_series.csv
+I want to try out the [gganimate package!](https://gganimate.com/index.html) So I thought I'd try it out on some covid time series data from New Zealand. I found some timeseries data here: https://github.com/CSSEGISandData/COVID-19/blob/master/who_covid_19_situation_reports/who_covid_19_sit_rep_time_series/who_covid_19_sit_rep_time_series.csv
 
 ## Get data
 
@@ -81,7 +81,7 @@ plot <- ggplot(data_nz, aes(x = date, y = cases)) +
   ease_aes('linear') +
   shadow_wake(.3)
 
-animate(plot, duration = 10, fps = 20, width = 800, height = 800, renderer = gifski_renderer())
+animate(plot, duration = 10, fps = 20, width = 300, height = 300, renderer = gifski_renderer())
 
 anim_save("covid_timeseries_NZ.gif", animation = last_animation(), path = ".")
 ```
