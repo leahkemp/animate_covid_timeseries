@@ -75,8 +75,8 @@ data_nz$cases <- as.integer(data_nz$cases)
 ```{r}
 plot <- ggplot(data_nz, aes(x = date, y = cases)) +
   geom_histogram(stat = "identity") +
-  theme_linedraw() +
-  labs(title = "Date: {frame_time}", y = "Number of cases") +
+  theme_bw() +
+  labs(title = "Date: {frame_time}", y = "Total number of cases", x = "Month") +
   transition_time(date) +
   ease_aes('linear') +
   shadow_wake(.3)
@@ -84,6 +84,71 @@ plot <- ggplot(data_nz, aes(x = date, y = cases)) +
 animate(plot, duration = 10, fps = 20, width = 300, height = 300, renderer = gifski_renderer())
 
 anim_save("covid_timeseries_NZ.gif", animation = last_animation(), path = ".")
+```
+
+## Plot more countries
+
+Extract a few countries
+
+```{r}
+data_several_countries <- data %>%
+  filter(Country.Region == "New Zealand" |
+           Country.Region == "Australia" |
+           Country.Region == "The United Kingdom" |
+           Country.Region == "United States of America" |
+           Country.Region == "Italy" |
+           Country.Region == "Brazil")
+```
+
+Manually add population sizes for these countries
+
+```{r}
+# Get order of countries in my dataframe
+data_several_countries$Country.Region
+
+# Add new column with population size for each of these countries (I used the number google provides for 2019)
+data_several_countries$pop_size <- c(4917000, 25360000, 66650000, 328200000, 60360000, 211000000)
+```
+
+Manipulate data
+
+```{r}
+# Remove redundant columns
+data_several_countries <- data_several_countries %>%
+  select (-c(Province.States, WHO.region, WHO.region.label))
+
+# Reformat the data for downstream plot
+data_several_countries <- data_several_countries %>% tidyr::gather(date, cases, -Country.Region, -pop_size, na.rm = TRUE)
+
+# Remove first row which is old column names after gather
+data_several_countries <- data_several_countries %>% slice(-1)
+
+# Format date column
+data_several_countries$date <- data_several_countries$date %>%
+  as.Date(format = "%m.%d.%y")
+
+# Format case number column
+data_several_countries$cases <- as.integer(data_several_countries$cases)
+
+# Create a column of case number by population size
+data_several_countries <- data_several_countries %>%
+  mutate(cases_scaled = cases/pop_size)
+```
+
+```{r}
+plot2 <- ggplot(data_several_countries, aes(x = date, y = cases_scaled, fill = Country.Region)) +
+  geom_histogram(stat = "identity") +
+  theme_bw() +
+  facet_wrap(~Country.Region) +
+  guides(fill = FALSE) +
+  labs(title = "Date: {frame_time}", y = "Total cases scaled by population size", x = "Month") +
+  transition_time(date) +
+  ease_aes('linear') +
+  shadow_wake(.3)
+
+animate(plot2, duration = 10, fps = 20, width = 1000, height = 500, renderer = gifski_renderer())
+
+anim_save("covid_timeseries_several_countries.gif", animation = last_animation(), path = ".")
 ```
 
 ## R info
